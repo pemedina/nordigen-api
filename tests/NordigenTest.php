@@ -8,6 +8,12 @@ use PHPUnit\Framework\TestCase;
 class NordigenTest extends TestCase
 {
 
+  public function it_fails_on_wrong_credentials()
+  {
+    $stub = $this->createStub(Nordigen::class);
+    $stub->method('login')->willReturn('{"summary": "Authentication failed","detail": "No active account found with the given credentials","status_code": 401}');
+
+  }
 
   public function testCreateRequisition()
   {
@@ -97,4 +103,5 @@ class NordigenTest extends TestCase
 
     $this->assertSame('foo', $stub->getAgreements('foo'));
   }
+
 }

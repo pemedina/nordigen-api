@@ -7,8 +7,9 @@ use Psr\Http\Message\ResponseInterface;
 
 class Nordigen
 {
-  const SUCCESS = 'success';
-  const FAILURE = 'failure';
+  const SUCCESS           = 'success';
+  const FAILURE           = 'failure';
+  const HTTP_SUCCESS_CODE = 200;
   private static string $host    = 'https://ob.nordigen.com/api/v2/';
   private static array  $headers = ['accept' => 'application/json', 'Content-Type' => 'application/json'];
   private string        $secret_id;
@@ -45,6 +46,8 @@ class Nordigen
 
   /**
    * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \Pemedina\Nordigen\WrapperException
+   * @throws \Pemedina\Nordigen\WrapperException|\Pemedina\Nordigen\WrapperException
    */
   public function getInstitutions()
   {
@@ -58,9 +61,9 @@ class Nordigen
   }
 
   /**
-   * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \GuzzleHttp\Exception\GuzzleException|\Pemedina\Nordigen\WrapperException
    */
-  public function login()
+  private function login()
   {
     if (is_null($this->token)) {
       $this->loadToken();
@@ -69,6 +72,7 @@ class Nordigen
 
   /**
    * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \Pemedina\Nordigen\WrapperException|\Pemedina\Nordigen\WrapperException
    */
   private function loadToken()
   {
@@ -81,6 +85,9 @@ class Nordigen
 
   }
 
+  /**
+   * @throws \Pemedina\Nordigen\WrapperException
+   */
   private static function parseResponse(ResponseInterface $response)
   {
     $body = $response->getBody()->getContents();
@@ -89,11 +96,16 @@ class Nordigen
       return json_encode(['code' => $response->getStatusCode(), 'status' => self::FAILURE, 'data' => $body]);
     }
 
+    if (self::HTTP_SUCCESS_CODE !== $response->getStatusCode()) {
+      self::throwException($body, $response->getStatusCode());
+    }
+
     return json_encode([
       'code'   => $response->getStatusCode(),
       'status' => (200 == $response->getStatusCode()) ? self::SUCCESS : self::FAILURE,
       'data'   => json_decode($body)
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_BIGINT_AS_STRING);
+
 
   }
 
@@ -116,9 +128,16 @@ class Nordigen
 
   }
 
+  /**
+   * @throws \Pemedina\Nordigen\WrapperException
+   */
+  private static function throwException($message, $code)
+  {
+    throw new WrapperException($message, $code);
+  }
 
   /**
-   * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \GuzzleHttp\Exception\GuzzleException|\Pemedina\Nordigen\WrapperException
    */
   private function refreshToken()
   {
@@ -139,6 +158,7 @@ class Nordigen
 
   /**
    * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \Pemedina\Nordigen\WrapperException|\Pemedina\Nordigen\WrapperException
    */
   public function createAgreement($institution_id, $attributes = [])
   {
@@ -165,6 +185,7 @@ class Nordigen
 
   /**
    * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \Pemedina\Nordigen\WrapperException|\Pemedina\Nordigen\WrapperException
    */
   public function createRequisition($attributes = [])
   {
@@ -180,6 +201,7 @@ class Nordigen
 
   /**
    * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \Pemedina\Nordigen\WrapperException|\Pemedina\Nordigen\WrapperException
    */
   public function getRequisitions($id = null)
   {
@@ -201,9 +223,9 @@ class Nordigen
     ];
   }
 
-
   /**
    * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \Pemedina\Nordigen\WrapperException|\Pemedina\Nordigen\WrapperException
    */
   public function getTransactions($id)
   {
@@ -216,6 +238,7 @@ class Nordigen
 
   /**
    * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \Pemedina\Nordigen\WrapperException|\Pemedina\Nordigen\WrapperException
    */
   public function getBalances($id)
   {
@@ -228,6 +251,7 @@ class Nordigen
 
   /**
    * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \Pemedina\Nordigen\WrapperException|\Pemedina\Nordigen\WrapperException
    */
   public function getDetails($id)
   {
@@ -240,6 +264,7 @@ class Nordigen
 
   /**
    * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \Pemedina\Nordigen\WrapperException|\Pemedina\Nordigen\WrapperException
    */
   public function getAgreements($id = null)
   {
@@ -255,6 +280,7 @@ class Nordigen
 
   /**
    * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \Pemedina\Nordigen\WrapperException|\Pemedina\Nordigen\WrapperException
    */
   public function deleteAgreement($id)
   {
@@ -266,6 +292,7 @@ class Nordigen
 
   /**
    * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \Pemedina\Nordigen\WrapperException|\Pemedina\Nordigen\WrapperException
    */
   public function deleteRequisition($id)
   {
@@ -277,6 +304,7 @@ class Nordigen
 
   /**
    * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \Pemedina\Nordigen\WrapperException|\Pemedina\Nordigen\WrapperException
    */
   public function getAccounts($id, $action = null)
   {
