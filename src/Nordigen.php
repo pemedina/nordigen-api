@@ -294,6 +294,25 @@ class Nordigen
    * @throws \GuzzleHttp\Exception\GuzzleException
    * @throws \Pemedina\Nordigen\WrapperException|\Pemedina\Nordigen\WrapperException
    */
+  public function acceptAgreement($id, $attributes)
+  {
+    $this->login();
+    $response = $this->client->request('PUT', sprintf('%s%s/%s/accept', self::$host, "agreements/enduser", $id), [
+      'headers' => $this->getAuthHeaders(),
+      'json'    => array_merge_recursive($attributes, [
+        "user_agent" => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:59.0) Gecko/20100101 Firefox/59.0',
+        "ip_address" => "127.0.0.1",
+
+      ])
+    ]);
+
+    return self::parseResponse($response);
+  }
+
+  /**
+   * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \Pemedina\Nordigen\WrapperException|\Pemedina\Nordigen\WrapperException
+   */
   public function deleteRequisition($id)
   {
     $this->login();
